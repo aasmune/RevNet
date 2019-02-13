@@ -2,11 +2,13 @@ import os
 
 import analyze_csv as csv_import
 
+from numpy import array_equal
+
 #analyze_data is imported as column vectors.
 
 cwd = os.path.dirname(__file__)
 
-NUM_CELLS = 10
+NUM_CELLS = 140
 def import_log(folder):
     TEMPERATURE_CHANNEL_TEMPLATE = "BMS_Cell_Temperature_"
     VOLTAGE_CHANNEL_TEMPLATE = "BMS_Cell_Voltage_"
@@ -58,9 +60,11 @@ def import_log(folder):
     filenames = [os.path.join(folder, channel) + ".csv" for channel in channels]
         
     raw_data = csv_import.read_csv_files(filenames)
+
     data = csv_import.create_single_table(raw_data)
 
     return data
+
 
 def main():
     
@@ -77,12 +81,6 @@ def main():
     X_test = X[132000:180000]
     Y_test = Y[132000:180000]
 
-
-
-
-
-    
-    
 
 
 if __name__ == "__main__":
