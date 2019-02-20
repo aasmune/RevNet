@@ -11,7 +11,7 @@ cwd = os.path.dirname(__file__)
 
 input_indices=range(1,56)
 recursive_depth=(2)
-NUM_CELLS = 10
+NUM_CELLS = 140
 
 def import_log(folder):
     TEMPERATURE_CHANNEL_TEMPLATE = "BMS_Cell_Temperature_"
@@ -64,24 +64,20 @@ def import_log(folder):
     filenames = [os.path.join(folder, channel) + ".csv" for channel in channels]
         
     raw_data = csv_import.read_csv_files(filenames)
+
     data = csv_import.create_single_table(raw_data)
 
     return data
 
+
 def main():
     
     # Import endurance FSS
-    # folder = os.path.join(cwd, "data", "FSS_endurance")
-    # data = import_log(folder)
+    folder = os.path.join(cwd, "data", "FSS_endurance")
+    data = import_log(folder)
 
-    # X = data[:,input_indices]
-    # Y = data[:,-10]
-
-    with open("loaded X.txt", "rb") as f:
-        X = pickle.load(f)
-
-    with open("loaded Y.txt", "rb") as f:
-        Y = pickle.load(f)
+    X = data[:,input_indices]
+    Y = data[:,-10]
 
     X_train = X[69000:107000]
     Y_train = Y[69000:107000]
