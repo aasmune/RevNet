@@ -1,12 +1,18 @@
 import os
+import pickle
 
 import analyze_csv as csv_import
-
-#analyze_data is imported as column vectors.
-
+import matplotlib.pyplot as plt                             #for plotting   
+from keras.models import Sequential
+from keras.layers import Dense, Activation, LSTM
+from keras.preprocessing.sequence import TimeseriesGenerator
+import numpy as np
 cwd = os.path.dirname(__file__)
 
+input_indices=range(1,56)
+recursive_depth=(2)
 NUM_CELLS = 10
+
 def import_log(folder):
     TEMPERATURE_CHANNEL_TEMPLATE = "BMS_Cell_Temperature_"
     VOLTAGE_CHANNEL_TEMPLATE = "BMS_Cell_Voltage_"
@@ -65,11 +71,17 @@ def import_log(folder):
 def main():
     
     # Import endurance FSS
-    folder = os.path.join(cwd, "data", "FSS_endurance")
-    data = import_log(folder)
+    # folder = os.path.join(cwd, "data", "FSS_endurance")
+    # data = import_log(folder)
 
-    X = data[:,]
-    Y = data[:,-1]
+    # X = data[:,input_indices]
+    # Y = data[:,-10]
+
+    with open("loaded X.txt", "rb") as f:
+        X = pickle.load(f)
+
+    with open("loaded Y.txt", "rb") as f:
+        Y = pickle.load(f)
 
     X_train = X[69000:107000]
     Y_train = Y[69000:107000]
@@ -77,9 +89,56 @@ def main():
     X_test = X[132000:180000]
     Y_test = Y[132000:180000]
 
+    
+
+    # Create the model for the network
+    model = Sequential([
+        Dense(10, input_shape= (recursive_depth, len(input_indices))),
+        
+        LSTM(10),
+
+        Dense(10),
+
+        Dense(10),
+        Activation('relu')
+    ])
+
+    #Compile model
+    model.compile(optimizer='adam',
+              loss='mse',
+              metrics=['accuracy'])
+
+    
+    batch_size = 200
+    data_gen_train = TimeseriesGenerator(X_train, Y_train,
+                                length=recursive_depth,
+                                batch_size=batch_size)
+
+    data_gen_test = TimeseriesGenerator(X_test, Y_test,
+                                length=recursive_depth,
+                                batch_size=batch_size)                            
 
 
+    model.fit_generator(data_gen_train, epochs=7)
 
+    y_train = model.predict_generator(data_gen_train) 
+
+
+    
+
+
+    for i in range(10):
+
+        fig = plt.figure(figsize=(12, 8))
+        plt.title("Accuracy training")
+        plt.xlabel("Number of training steps")
+        plt.plot(Y_train[:,i], label="Measured", linewidth=0.7)
+        plt.plot(np.append(np.zeros(recursive_depth), y_train[:,i]), label="Predicted", linewidth=0.7)
+        plt.ylabel("Voltage")
+        plt.grid()
+        plt.legend(loc="best")
+        plt.tick_params(axis='y')
+        plt.tight_layout()
 
     
     
