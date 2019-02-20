@@ -4,14 +4,16 @@ import pickle
 import analyze_csv as csv_import
 import matplotlib.pyplot as plt                             #for plotting   
 from keras.models import Sequential
-from keras.layers import Dense, Activation, LSTM
+from keras.layers import Dense, Activation, LSTM, Input, Dropout, Flatten
 from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
 cwd = os.path.dirname(__file__)
 
-input_indices=range(1,56)
+NUM_CELLS = 1
+input_indices=range(0,37 + 2 * NUM_CELLS)
+output_indices=range(37 + NUM_CELLS, 37 + 2 * NUM_CELLS)
 recursive_depth=(2)
-NUM_CELLS = 140
+
 
 def import_log(folder):
     TEMPERATURE_CHANNEL_TEMPLATE = "BMS_Cell_Temperature_"
@@ -77,7 +79,7 @@ def main():
     data = import_log(folder)
 
     X = data[:,input_indices]
-    Y = data[:,-10]
+    Y = data[:,output_indices]
 
     X_train = X[69000:107000]
     Y_train = Y[69000:107000]
@@ -88,21 +90,25 @@ def main():
     
 
     # Create the model for the network
-    model = Sequential([
-        Dense(10, input_shape= (recursive_depth, len(input_indices))),
-        
-        LSTM(10),
+    model = Sequential([        
+        LSTM(100, input_shape=(recursive_depth, len(input_indices)), return_sequences=True),
+        Dropout(0.2),
 
-        Dense(10),
+        LSTM(100, return_sequences=True),
+        LSTM(100, return_sequences=True),
+        Dropout(0.2),
 
-        Dense(10),
-        Activation('relu')
+        Flatten(),
+
+        Dense(NUM_CELLS, activation="linear")
     ])
 
     #Compile model
     model.compile(optimizer='adam',
               loss='mse',
               metrics=['accuracy'])
+
+    model.summary()
 
     
     batch_size = 200
@@ -123,7 +129,7 @@ def main():
     
 
 
-    for i in range(10):
+    for i in range(NUM_CELLS):
 
         fig = plt.figure(figsize=(12, 8))
         plt.title("Accuracy training")
@@ -135,6 +141,8 @@ def main():
         plt.legend(loc="best")
         plt.tick_params(axis='y')
         plt.tight_layout()
+
+        plt.show()
 
     
     
