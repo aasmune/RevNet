@@ -11,7 +11,7 @@ cwd = os.path.dirname(__file__)
 
 NUM_CELLS = 1
 input_indices=range(0,37 + 2 * NUM_CELLS)
-output_indices=range(37 + NUM_CELLS, 37 + 2 * NUM_CELLS)
+output_indices=range(38 + NUM_CELLS, 38 + 2 * NUM_CELLS)
 recursive_depth=(2)
 
 
@@ -22,42 +22,43 @@ def import_log(folder):
     temperature_channels = [TEMPERATURE_CHANNEL_TEMPLATE + str(i) for i in range(NUM_CELLS)]
     voltage_channels = [VOLTAGE_CHANNEL_TEMPLATE + str(i) for i in range(NUM_CELLS)]
     channels = [
-        "AMK_FL_Setpoint_negative_torque_limit", 
-        "AMK_FR_Setpoint_negative_torque_limit",
-        "AMK_RL_Setpoint_negative_torque_limit",
-        "AMK_RR_Setpoint_negative_torque_limit",
-        "AMK_FL_Setpoint_positive_torque_limit", 
-        "AMK_FR_Setpoint_positive_torque_limit",
-        "AMK_RL_Setpoint_positive_torque_limit",
-        "AMK_RR_Setpoint_positive_torque_limit",
-        "AMK_FL_Actual_velocity", 
-        "AMK_FR_Actual_velocity",
-        "AMK_RL_Actual_velocity",
-        "AMK_RR_Actual_velocity",
-        "AMK_FL_Torque_current",
-        "AMK_FR_Torque_current",
-        "AMK_RL_Torque_current",
-        "AMK_RR_Torque_current",
-        "AMK_FL_Temp_IGBT",                             #inverter temp
-        "AMK_FR_Temp_IGBT",
-        "AMK_RL_Temp_IGBT",
-        "AMK_RR_Temp_IGBT",
-        "BMS_Tractive_System_Current_Transient",
-        "BMS_SOC_from_lut",
-        "INS_Vx",                                       #long vel
-        "INS_Vy",                                       #lat vel
-        "INS_Ax",                                       #long acc
-        "INS_Ay",                                       #lat acc
-        "INS_Yaw_rate",
-        "SBS_F1_APPS1_Sensor",                          #Acceleration pedal position sensor
-        "SBS_F1_APPS2_Sensor",
-        "SBS_F1_brakePressure1_Sensor",
-        "SBS_F1_brakePressure2_Sensor", 
-        "SBS_F2_Damper_pos_FL",
-        "SBS_F2_Damper_pos_FR",
-        "SBS_R1_Damper_pos_RL",
-        "SBS_R1_Damper_pos_RR",
-        "SBS_F1_KERS_Sensor"
+        "SBS_F1_Steering_Angle", #real 0 to interpolate around, will be removed
+        "AMK_FL_Setpoint_negative_torque_limit", #0
+        "AMK_FR_Setpoint_negative_torque_limit", #1
+        "AMK_RL_Setpoint_negative_torque_limit", #2
+        "AMK_RR_Setpoint_negative_torque_limit",#3
+        "AMK_FL_Setpoint_positive_torque_limit", #4
+        "AMK_FR_Setpoint_positive_torque_limit",#5
+        "AMK_RL_Setpoint_positive_torque_limit",#6
+        "AMK_RR_Setpoint_positive_torque_limit",#7
+        "AMK_FL_Actual_velocity", #8
+        "AMK_FR_Actual_velocity",#9
+        "AMK_RL_Actual_velocity",#10
+        "AMK_RR_Actual_velocity",#11
+        "AMK_FL_Torque_current",#12
+        "AMK_FR_Torque_current",#13
+        "AMK_RL_Torque_current",#14
+        "AMK_RR_Torque_current",#15
+        "AMK_FL_Temp_IGBT",                       #16      #inverter temp
+        "AMK_FR_Temp_IGBT",#17
+        "AMK_RL_Temp_IGBT",#18
+        "AMK_RR_Temp_IGBT",#19
+        "BMS_Tractive_System_Current_Transient",#20
+        "BMS_SOC_from_lut",#21
+        "INS_Vx",                                 #22      #long vel
+        "INS_Vy",                                 #23      #lat vel
+        "INS_Ax",                                 #24      #long acc
+        "INS_Ay",                                 #25      #lat acc
+        "INS_Yaw_rate",#26
+        "SBS_F1_APPS1_Sensor",                    #27      #Acceleration pedal position sensor
+        "SBS_F1_APPS2_Sensor",#28
+        "SBS_F1_brakePressure1_Sensor",#29
+        "SBS_F1_brakePressure2_Sensor", #30
+        "SBS_F2_Damper_pos_FL",#31
+        "SBS_F2_Damper_pos_FR",#32
+        "SBS_R1_Damper_pos_RL",#33
+        "SBS_R1_Damper_pos_RR",#34
+        "SBS_F1_KERS_Sensor"#35
         
         ]
     channels.extend(temperature_channels)
@@ -73,8 +74,9 @@ def import_log(folder):
 
 
 def main():
-    
+    #----------------------------------------------------------------------------
     # Import endurance FSS
+    #----------------------------------------------------------------------------
     folder = os.path.join(cwd, "data", "FSS_endurance")
     data = import_log(folder)
 
@@ -86,8 +88,19 @@ def main():
 
     X_test = X[132000:180000]
     Y_test = Y[132000:180000]
+    #----------------------------------------------------------------------------
+    #-----------------nomrmalization of input - data(make prittier)---------------------
+    #----------------------------------------------------------------------------
+    ScalingVector=[21, 21, 21, 21, 
+                    21, 21, 21, 21,
+                     20000,20000, 20000,20000,
+                      50000, 50000, 50000, 50000,
+                      80, 80, 80, 80,
+                      140, 96,30, 10,
+                      15, 25, 3, 105, 
+                      105, 40, 40, 40,
+                      40, 40, 40, 170]
 
-    
 
     # Create the model for the network
     model = Sequential([        
@@ -143,6 +156,8 @@ def main():
         plt.tight_layout()
 
         plt.show()
+        
+        
 
     
     
