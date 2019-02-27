@@ -10,8 +10,8 @@ import numpy as np
 cwd = os.path.dirname(__file__)
 
 NUM_CELLS = 1
-input_indices=range(0,37 + 2 * NUM_CELLS)
-output_indices=range(38 + NUM_CELLS, 38 + 2 * NUM_CELLS)
+input_indices=range(0,36 + 2 * NUM_CELLS)
+output_indices=range(36 + NUM_CELLS, 36 + 2 * NUM_CELLS)
 recursive_depth=(2)
 
 
@@ -22,7 +22,6 @@ def import_log(folder):
     temperature_channels = [TEMPERATURE_CHANNEL_TEMPLATE + str(i) for i in range(NUM_CELLS)]
     voltage_channels = [VOLTAGE_CHANNEL_TEMPLATE + str(i) for i in range(NUM_CELLS)]
     channels = [
-        "SBS_F1_Steering_Angle", #real 0 to interpolate around, will be removed
         "AMK_FL_Setpoint_negative_torque_limit", #0
         "AMK_FR_Setpoint_negative_torque_limit", #1
         "AMK_RL_Setpoint_negative_torque_limit", #2
@@ -91,7 +90,7 @@ def main():
     #----------------------------------------------------------------------------
     #-----------------nomrmalization of input - data(make prittier)---------------------
     #----------------------------------------------------------------------------
-    ScalingVector=[21, 21, 21, 21, 
+    ScalingVector=np.array([21, 21, 21, 21, 
                     21, 21, 21, 21,
                      20000,20000, 20000,20000,
                       50000, 50000, 50000, 50000,
@@ -99,9 +98,14 @@ def main():
                       140, 96,30, 10,
                       15, 25, 3, 105, 
                       105, 40, 40, 40,
-                      40, 40, 40, 170]
+                      40, 40, 40, 170,70, 4.5])
+    maxVoltage=4.5
+    X_test=X_test/ScalingVector
+    X_train=X_train/ScalingVector
+    Y_train=Y_train/maxVoltage
+    Y_test=Y_test/maxVoltage
 
-
+    
     # Create the model for the network
     model = Sequential([        
         LSTM(100, input_shape=(recursive_depth, len(input_indices)), return_sequences=True),

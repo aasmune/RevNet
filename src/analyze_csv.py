@@ -16,5 +16,5 @@ def create_single_table(data):
     result = zeros(( n_samples, n_channels + 1))
     result[:,0] = data[0][:,0]
     for i in range(n_channels):
-        result[:,i + 1] = interp(result[:,0], data[i][:,0], data[i][:,1])
+        result[:,i] = interp(result[:,0], data[i][:,0], data[i][:,1])
     return result
