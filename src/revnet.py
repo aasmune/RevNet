@@ -9,61 +9,62 @@ from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
 cwd = os.path.dirname(__file__)
 
-NUM_CELLS = 1
+NUM_CELLS = 2
 input_indices=range(0,36 + 2 * NUM_CELLS)
 output_indices=range(36 + NUM_CELLS, 36 + 2 * NUM_CELLS)
 recursive_depth=(2)
+
+channels = [
+    ["AMK_FL_Setpoint_negative_torque_limit", 21], #0
+    ["AMK_FR_Setpoint_negative_torque_limit", 21], #1
+    ["AMK_RL_Setpoint_negative_torque_limit", 21], #2
+    ["AMK_RR_Setpoint_negative_torque_limit", 21], #3
+    ["AMK_FL_Setpoint_positive_torque_limit", 21], #4
+    ["AMK_FR_Setpoint_positive_torque_limit", 21], #5
+    ["AMK_RL_Setpoint_positive_torque_limit", 21], #6
+    ["AMK_RR_Setpoint_positive_torque_limit", 21], #7
+    ["AMK_FL_Actual_velocity", 20000], #8
+    ["AMK_FR_Actual_velocity", 20000], #9
+    ["AMK_RL_Actual_velocity", 20000], #10
+    ["AMK_RR_Actual_velocity", 20000], #11
+    ["AMK_FL_Torque_current", 50000], #12
+    ["AMK_FR_Torque_current", 50000], #13
+    ["AMK_RL_Torque_current", 50000], #14
+    ["AMK_RR_Torque_current", 50000], #15
+    ["AMK_FL_Temp_IGBT", 80], #16      #inverter temp
+    ["AMK_FR_Temp_IGBT", 80], #17
+    ["AMK_RL_Temp_IGBT", 80], #18
+    ["AMK_RR_Temp_IGBT", 80], #19
+    ["BMS_Tractive_System_Current_Transient", 140], #20
+    ["BMS_SOC_from_lut", 96], #21
+    ["INS_Vx", 30], #22      #long vel
+    ["INS_Vy", 10], #23      #lat vel
+    ["INS_Ax", 15], #24      #long acc
+    ["INS_Ay", 25], #25      #lat acc
+    ["INS_Yaw_rate", 3], #26
+    ["SBS_F1_APPS1_Sensor", 105], #27      #Acceleration pedal position sensor
+    ["SBS_F1_APPS2_Sensor", 105], #28
+    ["SBS_F1_brakePressure1_Sensor", 40], #29
+    ["SBS_F1_brakePressure2_Sensor", 40], #30
+    ["SBS_F2_Damper_pos_FL", 40], #31
+    ["SBS_F2_Damper_pos_FR", 40], #32
+    ["SBS_R1_Damper_pos_RL", 40], #33
+    ["SBS_R1_Damper_pos_RR", 40], #34
+    ["SBS_F1_KERS_Sensor", 170]#35
+    ]
 
 
 def import_log(folder):
     TEMPERATURE_CHANNEL_TEMPLATE = "BMS_Cell_Temperature_"
     VOLTAGE_CHANNEL_TEMPLATE = "BMS_Cell_Voltage_"
 
-    temperature_channels = [TEMPERATURE_CHANNEL_TEMPLATE + str(i) for i in range(NUM_CELLS)]
-    voltage_channels = [VOLTAGE_CHANNEL_TEMPLATE + str(i) for i in range(NUM_CELLS)]
-    channels = [
-        "AMK_FL_Setpoint_negative_torque_limit", #0
-        "AMK_FR_Setpoint_negative_torque_limit", #1
-        "AMK_RL_Setpoint_negative_torque_limit", #2
-        "AMK_RR_Setpoint_negative_torque_limit",#3
-        "AMK_FL_Setpoint_positive_torque_limit", #4
-        "AMK_FR_Setpoint_positive_torque_limit",#5
-        "AMK_RL_Setpoint_positive_torque_limit",#6
-        "AMK_RR_Setpoint_positive_torque_limit",#7
-        "AMK_FL_Actual_velocity", #8
-        "AMK_FR_Actual_velocity",#9
-        "AMK_RL_Actual_velocity",#10
-        "AMK_RR_Actual_velocity",#11
-        "AMK_FL_Torque_current",#12
-        "AMK_FR_Torque_current",#13
-        "AMK_RL_Torque_current",#14
-        "AMK_RR_Torque_current",#15
-        "AMK_FL_Temp_IGBT",                       #16      #inverter temp
-        "AMK_FR_Temp_IGBT",#17
-        "AMK_RL_Temp_IGBT",#18
-        "AMK_RR_Temp_IGBT",#19
-        "BMS_Tractive_System_Current_Transient",#20
-        "BMS_SOC_from_lut",#21
-        "INS_Vx",                                 #22      #long vel
-        "INS_Vy",                                 #23      #lat vel
-        "INS_Ax",                                 #24      #long acc
-        "INS_Ay",                                 #25      #lat acc
-        "INS_Yaw_rate",#26
-        "SBS_F1_APPS1_Sensor",                    #27      #Acceleration pedal position sensor
-        "SBS_F1_APPS2_Sensor",#28
-        "SBS_F1_brakePressure1_Sensor",#29
-        "SBS_F1_brakePressure2_Sensor", #30
-        "SBS_F2_Damper_pos_FL",#31
-        "SBS_F2_Damper_pos_FR",#32
-        "SBS_R1_Damper_pos_RL",#33
-        "SBS_R1_Damper_pos_RR",#34
-        "SBS_F1_KERS_Sensor"#35
-        
-        ]
+    temperature_channels = [[TEMPERATURE_CHANNEL_TEMPLATE + str(i), 70] for i in range(NUM_CELLS)]
+    voltage_channels = [[VOLTAGE_CHANNEL_TEMPLATE + str(i), 4.5] for i in range(NUM_CELLS)]
+    
     channels.extend(temperature_channels)
     channels.extend(voltage_channels)
 
-    filenames = [os.path.join(folder, channel) + ".csv" for channel in channels]
+    filenames = [os.path.join(folder, channel[0]) + ".csv" for channel in channels]
         
     raw_data = csv_import.read_csv_files(filenames)
 
@@ -90,21 +91,12 @@ def main():
     #----------------------------------------------------------------------------
     #-----------------nomrmalization of input - data(make prittier)---------------------
     #----------------------------------------------------------------------------
-    ScalingVector=np.array([21, 21, 21, 21, 
-                    21, 21, 21, 21,
-                     20000,20000, 20000,20000,
-                      50000, 50000, 50000, 50000,
-                      80, 80, 80, 80,
-                      140, 96,30, 10,
-                      15, 25, 3, 105, 
-                      105, 40, 40, 40,
-                      40, 40, 40, 170,70, 4.5])
     maxVoltage=4.5
+    ScalingVector = np.array([channel[1] for channel in channels]) #fetches the scaling vectors
     X_test=X_test/ScalingVector
     X_train=X_train/ScalingVector
     Y_train=Y_train/maxVoltage
     Y_test=Y_test/maxVoltage
-
     
     # Create the model for the network
     model = Sequential([        
@@ -142,8 +134,6 @@ def main():
 
     y_train = model.predict_generator(data_gen_train) 
 
-
-    
 
 
     for i in range(NUM_CELLS):
