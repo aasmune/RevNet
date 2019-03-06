@@ -1,5 +1,6 @@
 import os
 import pickle
+import pathlib
 
 import analyze_csv as csv_import
 import matplotlib.pyplot as plt                             #for plotting   
@@ -85,11 +86,19 @@ def main():
     X = data[:,input_indices]
     Y = data[:,output_indices]
 
-    X_train = X[69000:107000]
-    Y_train = Y[69000:107000]
+    start_time_fss = 81000
+    driver_change_start_fss = 142000
+    driver_change_finish_fss = 174000
+    finish_time_fss = 234000
 
-    X_test = X[132000:180000]
-    Y_test = Y[132000:180000]
+    # X_train = np.concatenate((X[start_time_fss:driver_change_start_fss], X[driver_change_finish_fss:finish_time_fss]), axis=0)
+    # Y_train = np.concatenate((Y[start_time_fss:driver_change_start_fss], Y[driver_change_finish_fss:finish_time_fss]), axis=0)
+
+    X_train = X[start_time_fss:finish_time_fss]
+    Y_train = Y[start_time_fss:finish_time_fss]
+
+    X_test = X[start_time_fss:driver_change_start_fss]
+    Y_test = Y[start_time_fss:driver_change_start_fss]
     #----------------------------------------------------------------------------
     #-----------------nomrmalization of input - data(make prittier)---------------------
     #----------------------------------------------------------------------------
@@ -132,26 +141,37 @@ def main():
                                 batch_size=batch_size)                            
 
 
-    model.fit_generator(data_gen_train, epochs=7)
+    model.fit_generator(
+        data_gen_train, 
+        validation_data=data_gen_test,
+        epochs=7)
 
-    y_train = model.predict_generator(data_gen_train) 
+    y_test = model.predict_generator(data_gen_train) 
 
 
 
+    # Visualize
+    output_path = pathlib.Path(os.path.dirname(__file__), "output")
+
+    if not output_path.exists():
+        os.makedirs(output_path)
+    
     for i in range(NUM_CELLS):
 
         fig = plt.figure(figsize=(12, 8))
-        plt.title("Accuracy training")
+        plt.title(f"Accuracy training, cell {i}")
         plt.xlabel("Number of training steps")
         plt.plot(Y_train[:,i], label="Measured", linewidth=0.7)
-        plt.plot(np.append(np.zeros(recursive_depth), y_train[:,i]), label="Predicted", linewidth=0.7)
+        plt.plot(np.append(np.zeros(recursive_depth), y_test[:,i]), label="Predicted", linewidth=0.7)
         plt.ylabel("Voltage")
         plt.grid()
         plt.legend(loc="best")
         plt.tick_params(axis='y')
         plt.tight_layout()
 
-        plt.show()
+        plt.savefig(output_path.joinpath(f"cell_{i}"))
+    
+    plt.show()
         
         
 
