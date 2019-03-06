@@ -8,12 +8,9 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, LSTM, Input, Dropout, Flatten
 from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
-cwd = os.path.dirname(__file__)
 
-NUM_CELLS = 2
-input_indices=range(0,36 + 2 * NUM_CELLS)
-output_indices=range(36 + NUM_CELLS, 36 + 2 * NUM_CELLS)
-recursive_depth=(2)
+from sklearn.preprocessing import normalize
+cwd = os.path.dirname(__file__)
 
 
 channels = [
@@ -39,7 +36,7 @@ channels = [
     ["AMK_RL_Temp_IGBT", 80], #18
     ["AMK_RR_Temp_IGBT", 80], #19
     ["BMS_Tractive_System_Current_Transient", 140], #20
-    ["BMS_SOC_from_lut", 96], #21
+    # ["BMS_SOC_from_lut", 96], #21
     ["INS_Vx", 30], #22      #long vel
     ["INS_Vy", 10], #23      #lat vel
     ["INS_Ax", 15], #24      #long acc
@@ -54,19 +51,26 @@ channels = [
     ["SBS_R1_Damper_pos_RL", 40], #33
     ["SBS_R1_Damper_pos_RR", 40], #34
     ["SBS_F1_KERS_Sensor", 170]#35
-    ]
+]
+
+NUM_CELLS = 140
+NUM_NON_BATTERY_CHANNELS = len(channels)
+input_indices=range(0,NUM_NON_BATTERY_CHANNELS + 2 * NUM_CELLS)
+output_indices=range(NUM_NON_BATTERY_CHANNELS + NUM_CELLS, NUM_NON_BATTERY_CHANNELS + 2 * NUM_CELLS)
+recursive_depth=(10)
+
+TEMPERATURE_CHANNEL_TEMPLATE = "BMS_Cell_Temperature_"
+VOLTAGE_CHANNEL_TEMPLATE = "BMS_Cell_Voltage_"
+
+temperature_channels = [[TEMPERATURE_CHANNEL_TEMPLATE + str(i), 70] for i in range(NUM_CELLS)]
+voltage_channels = [[VOLTAGE_CHANNEL_TEMPLATE + str(i), 4.5] for i in range(NUM_CELLS)]
+
+channels.extend(temperature_channels)
+channels.extend(voltage_channels)
 
 
 def import_log(folder):
-    TEMPERATURE_CHANNEL_TEMPLATE = "BMS_Cell_Temperature_"
-    VOLTAGE_CHANNEL_TEMPLATE = "BMS_Cell_Voltage_"
-
-    temperature_channels = [[TEMPERATURE_CHANNEL_TEMPLATE + str(i), 70] for i in range(NUM_CELLS)]
-    voltage_channels = [[VOLTAGE_CHANNEL_TEMPLATE + str(i), 4.5] for i in range(NUM_CELLS)]
     
-    channels.extend(temperature_channels)
-    channels.extend(voltage_channels)
-
     filenames = [os.path.join(folder, channel[0]) + ".csv" for channel in channels]
         
     raw_data = csv_import.read_csv_files(filenames)
@@ -75,48 +79,82 @@ def import_log(folder):
 
     return data
 
+def import_fss():
+    folder_fss = os.path.join(cwd, "data", "FSS_endurance")
+    data_fss = import_log(folder_fss)
+
+    start_time_fss = 80000
+    driver_change_start_fss = 142000
+    driver_change_finish_fss = 174000
+    finish_time_fss = 234000
+
+    X_FSS = data_fss[:,input_indices]
+    Y_FSS = data_fss[:,output_indices]
+
+
+    X_fss = X_FSS[start_time_fss:finish_time_fss]
+    Y_fss = Y_FSS[start_time_fss:finish_time_fss]
+
+    X_fss=normalize(X_fss, norm='max', axis=0)
+    Y_fss=normalize(Y_fss, norm='max', axis=0)
+
+    return X_fss, Y_fss
+
+def import_fsg():
+    folder_fsg = os.path.join(cwd, "data", "FSG_endurance")
+    data_fsg = import_log(folder_fsg)
+
+    start_time_fsg = 80000
+    driver_change_start_fsg = 142000
+    driver_change_finish_fsg = 174000
+    finish_time_fsg = 234000
+
+    X_FSG = data_fsg[:,input_indices]
+    Y_FSG = data_fsg[:,output_indices]
+
+
+    X_fsg = X_FSG[start_time_fsg:finish_time_fsg]
+    Y_fsg = Y_FSG[start_time_fsg:finish_time_fsg]
+
+    X_fsg=normalize(X_fsg, norm='max', axis=0)
+    Y_fsg=normalize(Y_fsg, norm='max', axis=0)
+
+    return X_fsg, Y_fsg
+
+def import_nr3():
+    folder_nr3 = os.path.join(cwd, "data", "testing_endurance_3")
+    data_nr3 = import_log(folder_nr3)
+
+    X_nr3 = data_nr3[:,input_indices]
+    Y_nr3 = data_nr3[:,output_indices]
+
+    X_nr3=normalize(X_nr3, norm='max', axis=0)
+    Y_nr3=normalize(Y_nr3, norm='max', axis=0)
+
+    return X_nr3, Y_nr3
 
 def main():
     #----------------------------------------------------------------------------
     # Import endurance FSS
     #----------------------------------------------------------------------------
-    folder = os.path.join(cwd, "data", "FSS_endurance")
-    data = import_log(folder)
 
-    X = data[:,input_indices]
-    Y = data[:,output_indices]
+    X_fss, Y_fss = import_fss()
+    X_nr3, Y_nr3 = import_nr3()
+    X_fsg, Y_fsg = import_fsg()
 
-    start_time_fss = 81000
-    driver_change_start_fss = 142000
-    driver_change_finish_fss = 174000
-    finish_time_fss = 234000
-
-    # X_train = np.concatenate((X[start_time_fss:driver_change_start_fss], X[driver_change_finish_fss:finish_time_fss]), axis=0)
-    # Y_train = np.concatenate((Y[start_time_fss:driver_change_start_fss], Y[driver_change_finish_fss:finish_time_fss]), axis=0)
-
-    X_train = X[start_time_fss:finish_time_fss]
-    Y_train = Y[start_time_fss:finish_time_fss]
-
-    X_test = X[start_time_fss:driver_change_start_fss]
-    Y_test = Y[start_time_fss:driver_change_start_fss]
-    #----------------------------------------------------------------------------
-    #-----------------nomrmalization of input - data(make prittier)---------------------
-    #----------------------------------------------------------------------------
-    maxVoltage=4.5
-    ScalingVector = np.array([channel[1] for channel in channels]) #fetches the scaling vectors
-    X_test=X_test/ScalingVector
-    X_train=X_train/ScalingVector
-    Y_train=Y_train/maxVoltage
-    Y_test=Y_test/maxVoltage
     
     # Create the model for the network
     model = Sequential([        
-        LSTM(100, input_shape=(recursive_depth, len(input_indices)), return_sequences=True),
+        LSTM(1000, input_shape=(recursive_depth, len(input_indices)), return_sequences=True),
         Dropout(0.2),
 
-        LSTM(100, return_sequences=True),
-        LSTM(100, return_sequences=True),
-        Dropout(0.2),
+        # LSTM(100, return_sequences=True),
+        # LSTM(100, return_sequences=True),
+        # Dropout(0.2),
+
+        # LSTM(100, return_sequences=True),
+        # LSTM(100, return_sequences=True),
+        # Dropout(0.2),
 
         Flatten(),
 
@@ -132,21 +170,31 @@ def main():
 
     
     batch_size = 200
-    data_gen_train = TimeseriesGenerator(X_train, Y_train,
+    data_gen_fss = TimeseriesGenerator(X_fss, Y_fss,
                                 length=recursive_depth,
                                 batch_size=batch_size)
 
-    data_gen_test = TimeseriesGenerator(X_test, Y_test,
+    data_gen_nr3 = TimeseriesGenerator(X_nr3, Y_nr3,
                                 length=recursive_depth,
-                                batch_size=batch_size)                            
+                                batch_size=batch_size) 
 
+    data_gen_fsg = TimeseriesGenerator(X_fsg, Y_fsg,
+                                length=recursive_depth,
+                                batch_size=batch_size)  
 
     model.fit_generator(
-        data_gen_train, 
-        validation_data=data_gen_test,
+        data_gen_fss, 
         epochs=7)
 
-    y_test = model.predict_generator(data_gen_train) 
+    model.fit_generator(
+        data_gen_nr3,
+        epochs=7
+    )
+
+    model.save("saved_model.h5")
+
+
+    y_fsg = model.predict_generator(data_gen_fsg) 
 
 
 
@@ -161,17 +209,17 @@ def main():
         fig = plt.figure(figsize=(12, 8))
         plt.title(f"Accuracy training, cell {i}")
         plt.xlabel("Number of training steps")
-        plt.plot(Y_train[:,i], label="Measured", linewidth=0.7)
-        plt.plot(np.append(np.zeros(recursive_depth), y_test[:,i]), label="Predicted", linewidth=0.7)
+        plt.plot(Y_fsg[:,i], label="Measured", linewidth=0.7)
+        plt.plot(np.append(np.zeros(recursive_depth), y_fsg[:,i]), label="Predicted", linewidth=0.7)
         plt.ylabel("Voltage")
         plt.grid()
         plt.legend(loc="best")
         plt.tick_params(axis='y')
         plt.tight_layout()
 
-        plt.savefig(output_path.joinpath(f"cell_{i}"))
+        plt.savefig(output_path.joinpath(f"cell_{i}.pdf"))
     
-    plt.show()
+    # plt.show()
         
         
 
