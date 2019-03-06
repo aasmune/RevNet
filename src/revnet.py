@@ -14,7 +14,9 @@ input_indices=range(0,36 + 2 * NUM_CELLS)
 output_indices=range(36 + NUM_CELLS, 36 + 2 * NUM_CELLS)
 recursive_depth=(2)
 
+
 channels = [
+    # File name, scaling factor
     ["AMK_FL_Setpoint_negative_torque_limit", 21], #0
     ["AMK_FR_Setpoint_negative_torque_limit", 21], #1
     ["AMK_RL_Setpoint_negative_torque_limit", 21], #2
