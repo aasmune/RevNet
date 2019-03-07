@@ -104,20 +104,20 @@ def import_fsg():
     folder_fsg = os.path.join(cwd, "data", "FSG_endurance")
     data_fsg = import_log(folder_fsg)
 
-    start_time_fsg = 80000
-    driver_change_start_fsg = 142000
-    driver_change_finish_fsg = 174000
-    finish_time_fsg = 234000
+#    start_time_fsg = 80000
+#   driver_change_start_fsg = 142000
+#    driver_change_finish_fsg = 174000
+#    finish_time_fsg = 234000
 
     X_FSG = data_fsg[:,input_indices]
     Y_FSG = data_fsg[:,output_indices]
 
 
-    X_fsg = X_FSG[start_time_fsg:finish_time_fsg]
-    Y_fsg = Y_FSG[start_time_fsg:finish_time_fsg]
+#    X_fsg = X_FSG[start_time_fsg:finish_time_fsg]
+#    Y_fsg = Y_FSG[start_time_fsg:finish_time_fsg]
 
-    X_fsg=normalize(X_fsg, norm='max', axis=0)
-    Y_fsg=normalize(Y_fsg, norm='max', axis=0)
+    X_fsg=normalize(X_FSG, norm='max', axis=0)
+    Y_fsg=normalize(Y_FSG, norm='max', axis=0)
 
     return X_fsg, Y_fsg
 
@@ -148,13 +148,13 @@ def main():
         LSTM(1000, input_shape=(recursive_depth, len(input_indices)), return_sequences=True),
         Dropout(0.2),
 
-        # LSTM(100, return_sequences=True),
-        # LSTM(100, return_sequences=True),
-        # Dropout(0.2),
+        LSTM(100, return_sequences=True),
+        LSTM(100, return_sequences=True),
+        Dropout(0.2),
 
-        # LSTM(100, return_sequences=True),
-        # LSTM(100, return_sequences=True),
-        # Dropout(0.2),
+        LSTM(100, return_sequences=True),
+        LSTM(100, return_sequences=True),
+        Dropout(0.2),
 
         Flatten(),
 
@@ -184,11 +184,11 @@ def main():
 
     model.fit_generator(
         data_gen_fss, 
-        epochs=7)
+        epochs=50)
 
     model.fit_generator(
         data_gen_nr3,
-        epochs=7
+        epochs=50
     )
 
     model.save("saved_model.h5")
