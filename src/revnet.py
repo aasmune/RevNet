@@ -2,6 +2,7 @@ import os
 import pickle
 
 import analyze_csv as csv_import
+import visualization as visualize
 import matplotlib.pyplot as plt                             #for plotting   
 from keras.models import Sequential
 from keras.layers import Dense, Activation, LSTM, Input, Dropout, Flatten
@@ -125,27 +126,8 @@ def main():
 
     y_train = model.predict_generator(data_gen_train) 
 
-
-    
-
-
-    for i in range(NUM_CELLS):
-
-        fig = plt.figure(figsize=(12, 8))
-        plt.title("Accuracy training")
-        plt.xlabel("Number of training steps")
-        plt.plot(Y_train[:,i], label="Measured", linewidth=0.7)
-        plt.plot(np.append(np.zeros(recursive_depth), y_train[:,i]), label="Predicted", linewidth=0.7)
-        plt.ylabel("Voltage")
-        plt.grid()
-        plt.legend(loc="best")
-        plt.tick_params(axis='y')
-        plt.tight_layout()
-
-        plt.show()
-
-    
-    
+    visualize.netAccuracy(true_output=Y_train, model_output=y_train,
+    n_cells=NUM_CELLS, recursive_depth=recursive_depth)
 
 
 if __name__ == "__main__":
