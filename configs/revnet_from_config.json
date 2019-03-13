@@ -1,0 +1,69 @@
+{
+  "exp": {
+    "name": "revnet_from_config"
+  },
+  "data_loader": {
+    "name": "revnet_data_loader.RevNetDataLoader"
+  },
+  "model":{
+    "name": "revnet_model.RevNetModel",
+    "learning_rate": 0.001,
+    "optimizer": "adam"
+  },
+  "trainer":{
+    "name": "revnet_trainer.RevNetModelTrainer",
+    "num_epochs": 20,
+    "batch_size": 64,
+    "validation_split":0.25,
+    "verbose_training": true
+  },
+  "callbacks":{
+    "checkpoint_monitor": "val_loss",
+    "checkpoint_mode": "min",
+    "checkpoint_save_best_only": true,
+   "checkpoint_save_weights_only": true,
+    "checkpoint_verbose": true,
+    "tensorboard_write_graph": true
+  },
+  "data":{
+    "number_of_cells": 140,
+    "other_channels": [
+      "AMK_FL_Setpoint_negative_torque_limit",
+      "AMK_FR_Setpoint_negative_torque_limit",
+      "AMK_RL_Setpoint_negative_torque_limit",
+      "AMK_RR_Setpoint_negative_torque_limit",
+      "AMK_FL_Setpoint_positive_torque_limit",
+      "AMK_FR_Setpoint_positive_torque_limit",
+      "AMK_RL_Setpoint_positive_torque_limit",
+      "AMK_RR_Setpoint_positive_torque_limit",
+      "AMK_FL_Actual_velocity",
+      "AMK_FR_Actual_velocity",
+      "AMK_RL_Actual_velocity",
+      "AMK_RR_Actual_velocity",
+      "AMK_FL_Torque_current",
+      "AMK_FR_Torque_current",
+      "AMK_RL_Torque_current",
+      "AMK_RR_Torque_current",
+      "AMK_FL_Temp_IGBT",
+      "AMK_FR_Temp_IGBT",
+      "AMK_RL_Temp_IGBT",
+      "AMK_RR_Temp_IGBT",
+      "BMS_Tractive_System_Current_Transient",
+      "BMS_SOC_from_lut",
+      "INS_Vx",
+      "INS_Vy",
+      "INS_Ax",
+      "INS_Ay",
+      "INS_Yaw_rate",
+      "SBS_F1_APPS1_Sensor",
+      "SBS_F1_APPS2_Sensor",
+      "SBS_F1_brakePressure1_Sensor",
+      "SBS_F1_brakePressure2_Sensor",
+      "SBS_F2_Damper_pos_FL",
+      "SBS_F2_Damper_pos_FR",
+      "SBS_R1_Damper_pos_RL",
+      "SBS_R1_Damper_pos_RR",
+      "SBS_F1_KERS_Sensor"
+    ]
+  }
+}
