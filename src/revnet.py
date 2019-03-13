@@ -15,41 +15,41 @@ cwd = os.path.dirname(__file__)
 
 channels = [
     # File name, scaling factor
-    ["AMK_FL_Setpoint_negative_torque_limit", 21], #0
-    ["AMK_FR_Setpoint_negative_torque_limit", 21], #1
-    ["AMK_RL_Setpoint_negative_torque_limit", 21], #2
-    ["AMK_RR_Setpoint_negative_torque_limit", 21], #3
-    ["AMK_FL_Setpoint_positive_torque_limit", 21], #4
-    ["AMK_FR_Setpoint_positive_torque_limit", 21], #5
-    ["AMK_RL_Setpoint_positive_torque_limit", 21], #6
-    ["AMK_RR_Setpoint_positive_torque_limit", 21], #7
-    ["AMK_FL_Actual_velocity", 20000], #8
-    ["AMK_FR_Actual_velocity", 20000], #9
-    ["AMK_RL_Actual_velocity", 20000], #10
-    ["AMK_RR_Actual_velocity", 20000], #11
-    ["AMK_FL_Torque_current", 50000], #12
-    ["AMK_FR_Torque_current", 50000], #13
-    ["AMK_RL_Torque_current", 50000], #14
-    ["AMK_RR_Torque_current", 50000], #15
-    ["AMK_FL_Temp_IGBT", 80], #16      #inverter temp
-    ["AMK_FR_Temp_IGBT", 80], #17
-    ["AMK_RL_Temp_IGBT", 80], #18
-    ["AMK_RR_Temp_IGBT", 80], #19
-    ["BMS_Tractive_System_Current_Transient", 140], #20
-    # ["BMS_SOC_from_lut", 96], #21
-    ["INS_Vx", 30], #22      #long vel
-    ["INS_Vy", 10], #23      #lat vel
-    ["INS_Ax", 15], #24      #long acc
-    ["INS_Ay", 25], #25      #lat acc
-    ["INS_Yaw_rate", 3], #26
-    ["SBS_F1_APPS1_Sensor", 105], #27      #Acceleration pedal position sensor
-    ["SBS_F1_APPS2_Sensor", 105], #28
-    ["SBS_F1_brakePressure1_Sensor", 40], #29
-    ["SBS_F1_brakePressure2_Sensor", 40], #30
-    ["SBS_F2_Damper_pos_FL", 40], #31
-    ["SBS_F2_Damper_pos_FR", 40], #32
-    ["SBS_R1_Damper_pos_RL", 40], #33
-    ["SBS_R1_Damper_pos_RR", 40], #34
+    ["AMK_FL_Setpoint_negative_torque_limit"
+    ["AMK_FR_Setpoint_negative_torque_limit"
+    ["AMK_RL_Setpoint_negative_torque_limit"
+    ["AMK_RR_Setpoint_negative_torque_limit"
+    ["AMK_FL_Setpoint_positive_torque_limit"
+    ["AMK_FR_Setpoint_positive_torque_limit"
+    ["AMK_RL_Setpoint_positive_torque_limit"
+    ["AMK_RR_Setpoint_positive_torque_limit"
+    ["AMK_FL_Actual_velocity"
+    ["AMK_FR_Actual_velocity"
+    ["AMK_RL_Actual_velocity"
+    ["AMK_RR_Actual_velocity"
+    ["AMK_FL_Torque_current"
+    ["AMK_FR_Torque_current"
+    ["AMK_RL_Torque_current"
+    ["AMK_RR_Torque_current"
+    ["AMK_FL_Temp_IGBT"      #inverter temp
+    ["AMK_FR_Temp_IGBT"
+    ["AMK_RL_Temp_IGBT"
+    ["AMK_RR_Temp_IGBT"
+    ["BMS_Tractive_System_Current_Transient"
+    # ["BMS_SOC_from_lut"
+    ["INS_Vx"      #long vel
+    ["INS_Vy"      #lat vel
+    ["INS_Ax"      #long acc
+    ["INS_Ay"      #lat acc
+    ["INS_Yaw_rate"
+    ["SBS_F1_APPS1_Sensor"      #Acceleration pedal position sensor
+    ["SBS_F1_APPS2_Sensor"
+    ["SBS_F1_brakePressure1_Sensor"
+    ["SBS_F1_brakePressure2_Sensor"
+    ["SBS_F2_Damper_pos_FL"
+    ["SBS_F2_Damper_pos_FR"
+    ["SBS_R1_Damper_pos_RL"
+    ["SBS_R1_Damper_pos_RR"
     ["SBS_F1_KERS_Sensor", 170]#35
 ]
 
@@ -104,17 +104,8 @@ def import_fsg():
     folder_fsg = os.path.join(cwd, "data", "FSG_endurance")
     data_fsg = import_log(folder_fsg)
 
-#    start_time_fsg = 80000
-#   driver_change_start_fsg = 142000
-#    driver_change_finish_fsg = 174000
-#    finish_time_fsg = 234000
-
     X_FSG = data_fsg[:,input_indices]
     Y_FSG = data_fsg[:,output_indices]
-
-
-#    X_fsg = X_FSG[start_time_fsg:finish_time_fsg]
-#    Y_fsg = Y_FSG[start_time_fsg:finish_time_fsg]
 
     X_fsg=normalize(X_FSG, norm='max', axis=0)
     Y_fsg=normalize(Y_FSG, norm='max', axis=0)

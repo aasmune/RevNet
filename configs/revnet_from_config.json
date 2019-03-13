@@ -6,15 +6,17 @@
     "name": "revnet_data_loader.RevNetDataLoader"
   },
   "model":{
-    "name": "revnet_model.RevNetModel",
+    "name": "revnet.frontend.RevNet",
+    "architecture": "LargeMemory",
     "learning_rate": 0.001,
-    "optimizer": "adam"
+    "optimizer": "adam",
+    "loss": "mse",
+    "recursive_depth": 10
   },
   "trainer":{
-    "name": "revnet_trainer.RevNetModelTrainer",
-    "num_epochs": 20,
-    "batch_size": 64,
-    "validation_split":0.25,
+    "name": "revnet_trainer.RevNetTrainer",
+    "num_epochs": 50,
+    "batch_size": 200,
     "verbose_training": true
   },
   "callbacks":{
@@ -23,7 +25,17 @@
     "checkpoint_save_best_only": true,
    "checkpoint_save_weights_only": true,
     "checkpoint_verbose": true,
-    "tensorboard_write_graph": true
+    "tensorboard_write_graph": true,
+    "early_stopping_patience": 10,
+    "early_stopping_restore_best_weights": true
+  },
+  "runs":{
+    "fss":{
+      "local_path": "fss",
+      "start_time": 0,
+      "end_time": -1,
+      "use_for_testing": false
+    }
   },
   "data":{
     "number_of_cells": 140,
