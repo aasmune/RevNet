@@ -13,8 +13,8 @@ def read_csv_files(filenames):
 def create_single_table(data):
     n_samples = data[0].shape[0]
     n_channels = len(data)
-    result = zeros(( n_samples, n_channels + 1))
+    result = zeros(( n_samples, n_channels))
     result[:,0] = data[0][:,0]
     for i in range(n_channels):
-        result[:,i] = interp(result[:,0], data[i][:,0], data[i][:,1])
+        result[:,i] = interp(data[0][:,0], data[i][:,0], data[i][:,1])
     return result
