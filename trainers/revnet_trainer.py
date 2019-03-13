@@ -56,11 +56,17 @@ class RevNetTrainer(BaseTrain):
         self.generators = generators
 
     def train(self):
+
+        # Hyper parameters
+        print("\nHyper parameters:")
+        print(f"Architecture: {self.config.model.architecture}")
+        print(f"Epochs: {self.config.trainer.num_epochs}")
+        print(f"Batch size: {self.config.trainer.batch_size}")
+        print(f"Training sets: {list(self.config.runs.keys())}\n")
         history = self.model.fit_generator(
             self.generators,
             epochs=self.config.trainer.num_epochs,
             verbose=self.config.trainer.verbose_training,
-            batch_size=self.config.trainer.batch_size,
             callbacks=self.callbacks,
         )
         self.loss.extend(history.history['loss'])

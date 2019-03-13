@@ -18,14 +18,15 @@ class RevNet(BaseModel):
         input_layer = Input(shape=(recursive_depth, number_of_inputs))
 
         if architecture == "LargeMemory":
-            self.memory = LargeRevNetMemory(recursive_depth, number_of_inputs)
+            self.backend = LargeRevNetMemory(input_layer)
         
-        memory = self.memory.remember(input_layer)
+        memory = self.backend.memory
 
         output = Flatten()(memory)
 
         output = Dense(self.config.data.number_of_cells, activation="linear")(output)
 
+        # Create model
         self.model = Model(input_layer, output)
 
         self.model.compile(

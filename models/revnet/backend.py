@@ -5,15 +5,15 @@ from keras.layers import Input, LSTM, Dropout, Flatten, Dense
 class BaseMemory:
     def __init__(self, recursive_depth, number_of_inputs):
         raise NotImplementedError("Not implemented")
-        self.memory = None
+        self._memory = None
 
-    def remember(self, input_):
-        return self.memory(input_)
+    @property
+    def memory(self):
+        return self._memory
 
 
 class LargeRevNetMemory(BaseMemory):
-    def __init__(self, recursive_depth, number_of_inputs):
-        input_layer = Input(shape=(recursive_depth, number_of_inputs))
+    def __init__(self, input_layer):
 
         # Layer 1
         x = LSTM(1000, return_sequences=True)(input_layer)
@@ -29,4 +29,4 @@ class LargeRevNetMemory(BaseMemory):
         x = LSTM(100, return_sequences=True)(x)
         x = Dropout(0.2)(x)
 
-        self.memory = Model(input_layer, x)
+        self._memory = x
