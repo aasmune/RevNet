@@ -9,48 +9,48 @@ from keras.layers import Dense, Activation, LSTM, Input, Dropout, Flatten
 from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
 
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import normalize, MinMaxScaler
 cwd = os.path.dirname(__file__)
 
 
 channels = [
     # File name, scaling factor
-    ["AMK_FL_Setpoint_negative_torque_limit", 21], #0
-    ["AMK_FR_Setpoint_negative_torque_limit", 21], #1
-    ["AMK_RL_Setpoint_negative_torque_limit", 21], #2
-    ["AMK_RR_Setpoint_negative_torque_limit", 21], #3
-    ["AMK_FL_Setpoint_positive_torque_limit", 21], #4
-    ["AMK_FR_Setpoint_positive_torque_limit", 21], #5
-    ["AMK_RL_Setpoint_positive_torque_limit", 21], #6
-    ["AMK_RR_Setpoint_positive_torque_limit", 21], #7
-    ["AMK_FL_Actual_velocity", 20000], #8
-    ["AMK_FR_Actual_velocity", 20000], #9
-    ["AMK_RL_Actual_velocity", 20000], #10
-    ["AMK_RR_Actual_velocity", 20000], #11
-    ["AMK_FL_Torque_current", 50000], #12
-    ["AMK_FR_Torque_current", 50000], #13
-    ["AMK_RL_Torque_current", 50000], #14
-    ["AMK_RR_Torque_current", 50000], #15
-    ["AMK_FL_Temp_IGBT", 80], #16      #inverter temp
-    ["AMK_FR_Temp_IGBT", 80], #17
-    ["AMK_RL_Temp_IGBT", 80], #18
-    ["AMK_RR_Temp_IGBT", 80], #19
-    ["BMS_Tractive_System_Current_Transient", 140], #20
+    ["AMK_FL_Setpoint_negative_torque_limit"], #0
+    ["AMK_FR_Setpoint_negative_torque_limit"], #1
+    ["AMK_RL_Setpoint_negative_torque_limit"], #2
+    ["AMK_RR_Setpoint_negative_torque_limit"], #3
+    ["AMK_FL_Setpoint_positive_torque_limit"], #4
+    ["AMK_FR_Setpoint_positive_torque_limit"], #5
+    ["AMK_RL_Setpoint_positive_torque_limit"], #6
+    ["AMK_RR_Setpoint_positive_torque_limit"], #7
+    ["AMK_FL_Actual_velocity"], #8
+    ["AMK_FR_Actual_velocity"], #9
+    ["AMK_RL_Actual_velocity"], #10
+    ["AMK_RR_Actual_velocity"], #11
+    ["AMK_FL_Torque_current"], #12
+    ["AMK_FR_Torque_current"], #13
+    ["AMK_RL_Torque_current"], #14
+    ["AMK_RR_Torque_current"], #15
+    ["AMK_FL_Temp_IGBT"], #16      #inverter temp
+    ["AMK_FR_Temp_IGBT"], #17
+    ["AMK_RL_Temp_IGBT"], #18
+    ["AMK_RR_Temp_IGBT"], #19
+    ["BMS_Tractive_System_Current_Transient"], #20
     # ["BMS_SOC_from_lut", 96], #21
-    ["INS_Vx", 30], #22      #long vel
-    ["INS_Vy", 10], #23      #lat vel
-    ["INS_Ax", 15], #24      #long acc
-    ["INS_Ay", 25], #25      #lat acc
-    ["INS_Yaw_rate", 3], #26
-    ["SBS_F1_APPS1_Sensor", 105], #27      #Acceleration pedal position sensor
-    ["SBS_F1_APPS2_Sensor", 105], #28
-    ["SBS_F1_brakePressure1_Sensor", 40], #29
-    ["SBS_F1_brakePressure2_Sensor", 40], #30
-    ["SBS_F2_Damper_pos_FL", 40], #31
-    ["SBS_F2_Damper_pos_FR", 40], #32
-    ["SBS_R1_Damper_pos_RL", 40], #33
-    ["SBS_R1_Damper_pos_RR", 40], #34
-    ["SBS_F1_KERS_Sensor", 170]#35
+    ["INS_Vx"], #22      #long vel
+    ["INS_Vy"], #23      #lat vel
+    ["INS_Ax"], #24      #long acc
+    ["INS_Ay"], #25      #lat acc
+    ["INS_Yaw_rate"], #26
+    ["SBS_F1_APPS1_Sensor"], #27      #Acceleration pedal position sensor
+    ["SBS_F1_APPS2_Sensor"], #28
+    ["SBS_F1_brakePressure1_Sensor"], #29
+    ["SBS_F1_brakePressure2_Sensor"], #30
+    ["SBS_F2_Damper_pos_FL"], #31
+    ["SBS_F2_Damper_pos_FR"], #32
+    ["SBS_R1_Damper_pos_RL"], #33
+    ["SBS_R1_Damper_pos_RR"], #34
+    ["SBS_F1_KERS_Sensor"]#35
 ]
 
 NUM_CELLS = 140
@@ -95,19 +95,22 @@ def import_fss():
     X_fss = X_FSS[start_time_fss:finish_time_fss]
     Y_fss = Y_FSS[start_time_fss:finish_time_fss]
 
-    X_fss=normalize(X_fss, norm='max', axis=0)
-    Y_fss=normalize(Y_fss, norm='max', axis=0)
+    X_fss_scaler = MinMaxScaler()
+    Y_fss_scaler = MinMaxScaler()
 
-    return X_fss, Y_fss
+    X_fss = X_fss_scaler.fit_transform(X_fss)
+    Y_fss = Y_fss_scaler.fit_transform(Y_fss)
+
+    return X_fss, Y_fss, X_fss_scaler, Y_fss_scaler
 
 def import_fsg():
     folder_fsg = os.path.join(cwd, "data", "FSG_endurance")
     data_fsg = import_log(folder_fsg)
 
-#    start_time_fsg = 80000
+#   start_time_fsg = 80000
 #   driver_change_start_fsg = 142000
-#    driver_change_finish_fsg = 174000
-#    finish_time_fsg = 234000
+#   driver_change_finish_fsg = 174000
+#   finish_time_fsg = 234000
 
     X_FSG = data_fsg[:,input_indices]
     Y_FSG = data_fsg[:,output_indices]
@@ -116,10 +119,13 @@ def import_fsg():
 #    X_fsg = X_FSG[start_time_fsg:finish_time_fsg]
 #    Y_fsg = Y_FSG[start_time_fsg:finish_time_fsg]
 
-    X_fsg=normalize(X_FSG, norm='max', axis=0)
-    Y_fsg=normalize(Y_FSG, norm='max', axis=0)
+    X_FSG_scaler = MinMaxScaler()
+    Y_FSG_scaler = MinMaxScaler()
 
-    return X_fsg, Y_fsg
+    X_fsg = X_FSG_scaler.fit_transform(X_FSG)
+    Y_fsg = Y_FSG_scaler.fit_transform(Y_FSG)
+
+    return X_fsg, Y_fsg, X_FSG_scaler, Y_FSG_scaler
 
 def import_nr3():
     folder_nr3 = os.path.join(cwd, "data", "testing_endurance_3")
@@ -128,19 +134,22 @@ def import_nr3():
     X_nr3 = data_nr3[:,input_indices]
     Y_nr3 = data_nr3[:,output_indices]
 
-    X_nr3=normalize(X_nr3, norm='max', axis=0)
-    Y_nr3=normalize(Y_nr3, norm='max', axis=0)
+    X_nr3_scaler = MinMaxScaler()
+    Y_nr3_scaler = MinMaxScaler()
 
-    return X_nr3, Y_nr3
+    X_nr3 = X_nr3_scaler.fit_transform(X_nr3)
+    Y_nr3 = Y_nr3_scaler.fit_transform(Y_nr3)
+
+    return X_nr3, Y_nr3, X_nr3_scaler, Y_nr3_scaler
 
 def main():
     #----------------------------------------------------------------------------
     # Import endurance FSS
     #----------------------------------------------------------------------------
 
-    X_fss, Y_fss = import_fss()
-    X_nr3, Y_nr3 = import_nr3()
-    X_fsg, Y_fsg = import_fsg()
+    X_fss, Y_fss, X_fss_scaler, Y_fss_scaler = import_fss()
+    X_nr3, Y_nr3, X_nr3_scaler, Y_nr3_scaler = import_nr3()
+    X_fsg, Y_fsg, X_fsg_scaler, Y_fsg_scaler = import_fsg()
 
     
     # Create the model for the network
