@@ -6,7 +6,7 @@ from sklearn.preprocessing import normalize
 from utils.import_csv import read_csv_files, create_single_table
 
 class RevNetDataLoader(BaseDataLoader):
-    DATA_SRC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+    DATA_SRC_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data_sets"))
     
     def __init__(self, config):
         super(RevNetDataLoader, self).__init__(config)

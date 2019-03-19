@@ -4,6 +4,18 @@ from itertools import accumulate
 from keras.preprocessing.sequence import TimeseriesGenerator
 from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping, LambdaCallback
 
+def custom_generator(generators):
+    generator_lengths = [len(generator) for generator in generators]
+    current_index = [0 for _ in range(len(generators))]
+    while True:
+        for i in range(len(generators)):
+            gen = generators[i]
+            length = generator_lengths[i]
+            index = current_index[i]
+            if index < length:
+                yield gen[i]
+
+
 
 class RevNetTrainer(BaseTrain):
     def __init__(self, model, data, config):
@@ -39,7 +51,7 @@ class RevNetTrainer(BaseTrain):
         size_of_each_generator = [len(generator) for generator in self.generators]
         end_of_each_generator_step = accumulate(size_of_each_generator)
         self.callbacks.append(
-            LambdaCallback(on_batch_end=lambda idx: self.model.reset_state() if idx in end_of_each_generator_step else None)
+            LambdaCallback(on_batch_end=lambda idx, _: self.model.reset_state() if idx in end_of_each_generator_step else None)
         )
 
 
@@ -64,10 +76,11 @@ class RevNetTrainer(BaseTrain):
         print(f"Batch size: {self.config.trainer.batch_size}")
         print(f"Training sets: {list(self.config.runs.keys())}\n")
         history = self.model.fit_generator(
-            self.generators,
+            custom_generator(self.generators),
             epochs=self.config.trainer.num_epochs,
             verbose=self.config.trainer.verbose_training,
             callbacks=self.callbacks,
+            steps_per_epoch=sum(x.data.shape[0] for x in self.generators)/self.config.trainer.batch_size
         )
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])
