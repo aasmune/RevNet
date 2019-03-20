@@ -7,7 +7,7 @@
   },
   "model":{
     "name": "revnet.frontend.RevNet",
-    "architecture": "LargeMemory",
+    "architecture": "SmallMemory",
     "learning_rate": 0.001,
     "optimizer": "adam",
     "loss": "mse",
