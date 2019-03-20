@@ -28,5 +28,26 @@ class LargeRevNetMemory(BaseMemory):
         x = LSTM(100, return_sequences=True)(x)
         x = LSTM(100, return_sequences=True)(x)
         x = Dropout(0.2)(x)
+        
+        x = Flatten()(x)
+
+        self._memory = x
+
+class SmallRevNetMemory(BaseMemory):
+    def __init__(self, input_layer):
+
+        # Layer 1
+        x = LSTM(100, return_sequences=True)(input_layer)
+        x = LSTM(100, return_sequences=True)(x)
+        x = Dropout(0.2)(x)
+
+        x = Flatten()(x)
+
+        # Dense layers
+        x = Dense(100)(x)
+        x = Dropout(0.2)(x)
+        
+        x = Dense(100)(x)
+        x = Dropout(0.2)(x)
 
         self._memory = x

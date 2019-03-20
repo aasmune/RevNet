@@ -2,7 +2,7 @@ from keras.layers import Input, Flatten, Dense
 from keras.models import Model
 from base.base_model import BaseModel
 
-from models.revnet.backend import LargeRevNetMemory
+from models.revnet.backend import LargeRevNetMemory, SmallRevNetMemory
 
 class RevNet(BaseModel):
     def __init__(self, config):
@@ -19,12 +19,12 @@ class RevNet(BaseModel):
 
         if architecture == "LargeMemory":
             self.backend = LargeRevNetMemory(input_layer)
+        elif architecture == "SmallMemory":
+            self.backend = SmallRevNetMemory(input_layer)
         
         memory = self.backend.memory
 
-        output = Flatten()(memory)
-
-        output = Dense(self.config.data.number_of_cells, activation="linear")(output)
+        output = Dense(self.config.data.number_of_cells, activation="linear")(memory)
 
         # Create model
         self.model = Model(input_layer, output)
