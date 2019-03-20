@@ -1,0 +1,104 @@
+{
+  "exp": {
+    "name": "revnet_from_config"
+  },
+  "data_loader": {
+    "name": "revnet_data_loader.RevNetDataLoader"
+  },
+  "model":{
+    "name": "revnet.frontend.RevNet",
+    "architecture": "SmallMemory",
+    "learning_rate": 0.001,
+    "optimizer": "adam",
+    "loss": "mse",
+    "recursive_depth": 10
+  },
+  "trainer":{
+    "name": "revnet_trainer.RevNetTrainer",
+    "num_epochs": 20,
+    "batch_size": 200,
+    "verbose_training": true
+  },
+  "callbacks":{
+    "checkpoint_monitor": "val_loss",
+    "checkpoint_mode": "min",
+    "checkpoint_save_best_only": true,
+   "checkpoint_save_weights_only": true,
+    "checkpoint_verbose": true,
+    "tensorboard_write_graph": true,
+    "early_stopping_patience": 10,
+    "early_stopping_restore_best_weights": true
+  },
+  "runs":{
+    "fss":{
+      "local_path": "fss",
+      "start_time": 0,
+      "end_time": -1,
+      "use_for_testing": false
+    },
+    "fsg":{
+      "local_path": "fsg",
+      "start_time": 0,
+      "end_time": -1,
+      "use_for_testing": false
+    },
+    "nr1":{
+      "local_path": "nr1",
+      "start_time": 0,
+      "end_time": -1,
+      "use_for_testing": true
+    },
+    "nr2":{
+      "local_path": "nr2",
+      "start_time": 0,
+      "end_time": -1,
+      "use_for_testing": false
+    },
+    "nr3":{
+      "local_path": "nr3",
+      "start_time": 0,
+      "end_time": -1,
+      "use_for_testing": false
+    }
+  },
+  "data":{
+    "number_of_cells": 140,
+    "other_channels": [
+      "AMK_FL_Setpoint_negative_torque_limit",
+      "AMK_FR_Setpoint_negative_torque_limit",
+      "AMK_RL_Setpoint_negative_torque_limit",
+      "AMK_RR_Setpoint_negative_torque_limit",
+      "AMK_FL_Setpoint_positive_torque_limit",
+      "AMK_FR_Setpoint_positive_torque_limit",
+      "AMK_RL_Setpoint_positive_torque_limit",
+      "AMK_RR_Setpoint_positive_torque_limit",
+      "AMK_FL_Actual_velocity",
+      "AMK_FR_Actual_velocity",
+      "AMK_RL_Actual_velocity",
+      "AMK_RR_Actual_velocity",
+      "AMK_FL_Torque_current",
+      "AMK_FR_Torque_current",
+      "AMK_RL_Torque_current",
+      "AMK_RR_Torque_current",
+      "AMK_FL_Temp_IGBT",
+      "AMK_FR_Temp_IGBT",
+      "AMK_RL_Temp_IGBT",
+      "AMK_RR_Temp_IGBT",
+      "BMS_Tractive_System_Current_Transient",
+      "INS_Vx",
+      "INS_Vy",
+      "INS_Ax",
+      "INS_Ay",
+      "INS_Yaw_rate",
+      "SBS_F1_APPS1_Sensor",
+      "SBS_F1_APPS2_Sensor",
+      "SBS_F1_brakePressure1_Sensor",
+      "SBS_F1_brakePressure2_Sensor",
+      "SBS_F2_Damper_pos_FL",
+      "SBS_F2_Damper_pos_FR",
+      "SBS_R1_Damper_pos_RL",
+      "SBS_R1_Damper_pos_RR",
+      "SBS_F1_KERS_Sensor"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+[submodule "data_sets"]
+	path = data_sets
+	url = https://github.com/aasmune/RevNet-datasets.git
