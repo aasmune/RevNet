@@ -101,26 +101,7 @@ def import_fss():
 
     return X_fss, Y_fss
 
-def import_fsg():
-    folder_fsg = os.path.join(cwd, "data", "FSG_endurance")
-    data_fsg = import_log(folder_fsg)
 
-#    start_time_fsg = 80000
-#   driver_change_start_fsg = 142000
-#    driver_change_finish_fsg = 174000
-#    finish_time_fsg = 234000
-
-    X_FSG = data_fsg[:,input_indices]
-    Y_FSG = data_fsg[:,output_indices]
-
-
-#    X_fsg = X_FSG[start_time_fsg:finish_time_fsg]
-#    Y_fsg = Y_FSG[start_time_fsg:finish_time_fsg]
-
-    X_fsg=normalize(X_FSG, norm='max', axis=0)
-    Y_fsg=normalize(Y_FSG, norm='max', axis=0)
-
-    return X_fsg, Y_fsg
 
 def import_nr3():
     folder_nr3 = os.path.join(cwd, "data", "testing_endurance_3")
@@ -189,25 +170,10 @@ def main():
 
     model.fit_generator(
         data_gen_nr3,
-        epochs=50
+        epochs=50)
     )
 
-    model.save("saved_model.h5")
-
-
-    y_fsg = model.predict_generator(data_gen_fsg) 
-
     
-
-
-    # Visualize
-    output_path = pathlib.Path(os.path.dirname(__file__), "output")
-
-    if not output_path.exists():
-        os.makedirs(output_path)
-    
-    visualize.netAccuracy(true_output=Y_train, model_output=y_train,
-    n_cells=NUM_CELLS, recursive_depth=recursive_depth)
         
         
 
