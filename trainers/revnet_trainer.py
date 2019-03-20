@@ -1,5 +1,6 @@
 from base.base_trainer import BaseTrain
 import os
+import numpy as np
 from itertools import accumulate
 from keras.preprocessing.sequence import TimeseriesGenerator
 from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping, LambdaCallback
@@ -26,9 +27,11 @@ class RevNetTrainer(BaseTrain):
         self.val_loss = []
         self.val_acc = []
         self.generators = None
+        self.end_of_each_generator_step = []
+        self.size_of_each_generator = []
         self.create_generator()
         self.init_callbacks()
-        self.end_of_each_generator_step = []
+        
 
     def init_callbacks(self):
 
@@ -48,10 +51,11 @@ class RevNetTrainer(BaseTrain):
         )
 
         # Create custom callback resetting LSTM state when each dataset (generator) is finished
-        size_of_each_generator = [len(generator) for generator in self.generators]
-        end_of_each_generator_step = accumulate(size_of_each_generator)
+        self.size_of_each_generator = [len(generator) for generator in self.generators]
+        end_of_each_generator_step = list(accumulate(self.size_of_each_generator))
+        self.end_of_each_generator_step = end_of_each_generator_step
         self.callbacks.append(
-            LambdaCallback(on_batch_end=lambda idx, _: self.model.reset_state() if idx in end_of_each_generator_step else None)
+            LambdaCallback(on_batch_end=lambda idx, _: self.model.reset_states() if idx in end_of_each_generator_step else None)
         )
 
 
@@ -75,14 +79,33 @@ class RevNetTrainer(BaseTrain):
         print(f"Epochs: {self.config.trainer.num_epochs}")
         print(f"Batch size: {self.config.trainer.batch_size}")
         print(f"Training sets: {list(self.config.runs.keys())}\n")
+        print(f"Size of each generator: {self.size_of_each_generator}")
+        print(f"End of generator steps: {self.end_of_each_generator_step}")
+
         history = self.model.fit_generator(
             custom_generator(self.generators),
             epochs=self.config.trainer.num_epochs,
             verbose=self.config.trainer.verbose_training,
             callbacks=self.callbacks,
-            steps_per_epoch=sum(x.data.shape[0] for x in self.generators)/self.config.trainer.batch_size
+            steps_per_epoch=np.ceil(sum(x.data.shape[0] for x in self.generators)/self.config.trainer.batch_size)
         )
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])
-        self.val_loss.extend(history.history['val_loss'])
-        self.val_acc.extend(history.history['val_acc'])
+        # self.val_loss.extend(history.history['val_loss'])
+        # self.val_acc.extend(history.history['val_acc'])
+
+        # Save weights
+        save_path = os.path.join(os.path.dirname(__file__), "..", "saved_models")
+        if not os.path.exists(save_path):
+            print("Creating directory for save trained model.")
+            os.makedirs(save_path)
+
+        print("Save trained model.")
+        self.model.save_weights(os.path.join(save_path, "model_weights_" + self.config.model.architecture + ".h5"))
+
+        print("Save history from during training")
+        np.savetxt(os.path.join(save_path, "loss_history_" + self.config.model.architecture + ".txt"), self.loss, delimiter=",")
+        np.savetxt(os.path.join(save_path, "accuracy_history_" + self.config.model.architecture + ".txt"), self.loss, delimiter=",")
+        # numpy.savetxt("loss_history.txt", self.loss, delimiter=",")
+        # numpy.savetxt("loss_history.txt", self.loss, delimiter=",")
+

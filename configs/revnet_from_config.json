@@ -15,7 +15,7 @@
   },
   "trainer":{
     "name": "revnet_trainer.RevNetTrainer",
-    "num_epochs": 50,
+    "num_epochs": 20,
     "batch_size": 200,
     "verbose_training": true
   },
@@ -33,13 +33,19 @@
     "fss":{
       "local_path": "fss",
       "start_time": 0,
-      "end_time": 1200,
+      "end_time": -1,
       "use_for_testing": false
     },
     "fsg":{
       "local_path": "fsg",
       "start_time": 0,
-      "end_time": 2380,
+      "end_time": -1,
+      "use_for_testing": false
+    },
+    "nr3":{
+      "local_path": "nr3",
+      "start_time": 0,
+      "end_time": -1,
       "use_for_testing": false
     }
   },
@@ -67,7 +73,6 @@
       "AMK_RL_Temp_IGBT",
       "AMK_RR_Temp_IGBT",
       "BMS_Tractive_System_Current_Transient",
-      "BMS_SOC_from_lut",
       "INS_Vx",
       "INS_Vy",
       "INS_Ax",
