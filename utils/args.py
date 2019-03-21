@@ -6,8 +6,18 @@ def get_args():
     argparser.add_argument(
         '-c', '--config',
         dest='config',
-        metavar='C',
         default='None',
-        help='The Configuration file')
+        help='The Configuration file',
+        required=True)
+
+    train_or_visualize = argparser.add_mutually_exclusive_group()
+
+    train_or_visualize.add_argument(
+        "-m", "--mode",
+        dest="mode",
+        choices=["train", "vis"],
+        default="train",
+        help="Train or visualize network."
+    )
     args = argparser.parse_args()
     return args

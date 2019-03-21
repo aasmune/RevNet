@@ -7,14 +7,16 @@ from keras.callbacks import ModelCheckpoint, TensorBoard, EarlyStopping, LambdaC
 
 def custom_generator(generators):
     generator_lengths = [len(generator) for generator in generators]
-    current_index = [0 for _ in range(len(generators))]
+    # current_index = [0 for _ in range(len(generators))]
     while True:
         for i in range(len(generators)):
             gen = generators[i]
             length = generator_lengths[i]
-            index = current_index[i]
-            if index < length:
-                yield gen[i]
+            
+            for j in range(length):
+                yield gen[j]
+                
+                
 
 
 
@@ -54,9 +56,9 @@ class RevNetTrainer(BaseTrain):
         self.size_of_each_generator = [len(generator) for generator in self.generators]
         end_of_each_generator_step = list(accumulate(self.size_of_each_generator))
         self.end_of_each_generator_step = end_of_each_generator_step
-        self.callbacks.append(
-            LambdaCallback(on_batch_end=lambda idx, _: self.model.reset_states() if idx in end_of_each_generator_step else None)
-        )
+        # self.callbacks.append(
+        #     LambdaCallback(on_batch_end=lambda idx, _: self.model.reset_states() if idx in end_of_each_generator_step else None)
+        # )
 
 
     def create_generator(self):
@@ -78,7 +80,7 @@ class RevNetTrainer(BaseTrain):
         print(f"Architecture: {self.config.model.architecture}")
         print(f"Epochs: {self.config.trainer.num_epochs}")
         print(f"Batch size: {self.config.trainer.batch_size}")
-        print(f"Training sets: {list(self.config.runs.keys())}\n")
+        print(f"Training sets: {list(key for key in self.config.runs.keys() if self.config.runs[key].use_for_testing)}\n")
         print(f"Size of each generator: {self.size_of_each_generator}")
         print(f"End of generator steps: {self.end_of_each_generator_step}")
 

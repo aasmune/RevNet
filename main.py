@@ -20,11 +20,19 @@ def main():
         print('Create the model.')
         model = factory.create("models."+config.model.name)(config)
 
-        print('Create the trainer')
-        trainer = factory.create("trainers."+config.trainer.name)(model.model, data_loader.get_train_data(), config)
+        if args.mode == "train":
+            print('Create the trainer')
+            trainer = factory.create("trainers."+config.trainer.name)(model.model, data_loader.get_train_data(), config)
 
-        print('Start training the model.')
-        trainer.train()
+            print('Start training the model.')
+            trainer.train()
+        elif args.mode == "vis":
+            print('Create the visualizer')
+            visualizer = factory.create("visualization."+config.visualization.name)(model.model, data_loader.get_test_data(), config)
+
+            print("Start visualizing the model")
+
+            visualizer.visualize()
 
     except Exception as e:
         print(e)
