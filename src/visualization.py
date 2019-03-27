@@ -1,12 +1,9 @@
-import matplotlib.pyplot as plt
-import numpy as np
-
 import os
 import pickle
 import pathlib
 
 import analyze_csv as csv_import
-import visualization as visualize
+# import visualization as visualize
 import matplotlib.pyplot as plt                             #for plotting
 from matplotlib import animation
 from matplotlib import colors
@@ -16,9 +13,33 @@ from keras.layers import Dense, Activation, LSTM, Input, Dropout, Flatten
 from keras.preprocessing.sequence import TimeseriesGenerator
 import numpy as np
 import seaborn as sns
+import datetime as dt
 
 from sklearn.preprocessing import normalize
 cwd = os.path.dirname(__file__)
+
+
+class VoltObj:
+    """
+    This can be changed to take in predicted values from the network for example.
+    """
+    def __init__(self, times, voltage_prediction):
+        self.voltages = voltage_prediction
+        self.time = times
+        self.val = 0
+        self.i = 0
+    
+    def get_next(self):
+        time = self.time[self.i]
+        cell_voltages = np.reshape(self.voltages[self.i, :], ((2, 10, 7)))
+        self.i += 20
+        return time, cell_voltages
+    
+    def get_next_test(self):
+        self.i += 1
+        self.val = np.sin(np.pi*self.i/15)
+        self.voltages[1, :, :] = self.val
+        return self.voltages
 
 channels = [
     # File name, scaling factor
@@ -84,14 +105,14 @@ def netAccuracy(save_plot=True, show_plot=False,*, true_x, true_output, model_x,
     for i in range(2):
 
         fig = plt.figure(figsize=(12, 8))
-        plt.title(f"Predicted output vs measured, cell{i}")
+        plt.title(f"Predicted output vs. measured for cell{i}")
         plt.xlabel("Timestep")
         plt.plot(true_x, true_output[:,i], label="Measured", linewidth=0.7)
         plt.plot(model_x, model_output[:,i], label="Predicted", linewidth=0.7)
         plt.ylabel("Voltage")
 
-        plt.axhline(y=1, linewidth=0.5, color="r", linestyle='--', label="max allowed voltage")
-        plt.axhline(y=0.87, linewidth=0.5, color="r", linestyle='--', label="min allowed voltage")
+        plt.axhline(y=3, linewidth=0.5, color="k", linestyle='--', label="Min. safe voltage")
+        plt.axhline(y=4.2, linewidth=0.5, color="k", linestyle='--', label="Max. safe voltage")
 
         plt.legend(loc="best")
         plt.tick_params(axis='y')
@@ -101,61 +122,170 @@ def netAccuracy(save_plot=True, show_plot=False,*, true_x, true_output, model_x,
             plt.savefig(output_path.joinpath(f"cell_{i}.pdf"))
         if show_plot:
             plt.show()
-        
 
-def animate_cell_voltage(*, model_x, model_output, n_cells, recursive_depth):
-    sns.set()
-    # grid = np.zeros(n_cells/2, n_cells/2)
-    # grid_matrix = np.zeros(())
-    for i in range(len(model_output[:, 1])):
-        a = 1
-    cell1 = np.append(np.zeros(recursive_depth), model_output[:,1])
-    print(len(cell1))
-    print(len(model_output[:, 1]))
-    print(recursive_depth)
-
-    #fig = plt.figure()
-    #f, ax = plt.subplots(figsize=(9, 6))
-    #sns.heatmap(cell1, annot=True, fmt="d", linewidths=.5, ax=ax)
-    return
-
-
-def init():
-    for i in range(7):
-        plt.subplot(4, 2, i+1)
-        plt.title(str(i+1))
-        sns.heatmap(data)
-
-def animate(i):
-    data = np.ones((2, 10))*i
-    for j in range(7):
-        plt.subplot(4, 2, j+1)
-        plt.title(str(j+1))
-        sns.heatmap(data)
-
-def test():
+def make_animation(*, time, voltage_prediction):
     """
-    HERE, SOMETHING'S WRONG
+    Animates based on a voltage object, giving the next voltages through get_next()
     """
-    sns.set()
-    data = np.zeros((2, 10))
-    fig = plt.figure(1)
+    # Create figure for plotting
+    fig = plt.figure()
 
-    """
-    for i in range(7):
-        plt.subplot(4, 2, i+1)
-        plt.title(str(i+1))
-        sns.heatmap(data)
+    ax1 = fig.add_subplot(4, 2, 1)
+    ax2 = fig.add_subplot(4, 2, 2)
+    ax3 = fig.add_subplot(4, 2, 3)
+    ax4 = fig.add_subplot(4, 2, 4)
+    ax5 = fig.add_subplot(4, 2, 5)
+    ax6 = fig.add_subplot(4, 2, 6)
+    ax7 = fig.add_subplot(4, 2, 7)
+
+    #predicted_voltages = np.ones((2, 10, 7))
+    voltObj = VoltObj(time, voltage_prediction)
+
+    # Set up plot to call animate() function periodically
+    ani = animation.FuncAnimation(fig, animate,
+          fargs=(voltObj, ax1, ax2, ax3, ax4, ax5, ax6, ax7, fig), interval=50)
+    # ani.save('voltage_change.mp4', fps=30, extra_args=['-vcodec', 'libx264'])
+
     plt.show()
-    """
 
-    anim = animation.FuncAnimation(fig, animate, np.arange(1, 100), init_func=init, interval=25, repeat = False)
-    plt.show()
+def animate(i, voltObj, ax1, ax2, ax3, ax4, ax5, ax6, ax7, fig):
+    # This function is called periodically from FuncAnimation
+    ax1.clear()
+    ax2.clear()
+    ax3.clear()
+    ax4.clear()
+    ax5.clear()
+    ax6.clear()
+    ax7.clear()
+
+    # Remove ticks on axes
+    ax1.set_yticklabels([])
+    ax1.set_xticklabels([])
+    ax2.set_yticklabels([])
+    ax2.set_xticklabels([])
+    ax3.set_yticklabels([])
+    ax3.set_xticklabels([])
+    ax4.set_yticklabels([])
+    ax4.set_xticklabels([])
+    ax5.set_yticklabels([])
+    ax5.set_xticklabels([])
+    ax6.set_yticklabels([])
+    ax6.set_xticklabels([])
+    ax7.set_yticklabels([])
+    ax7.set_xticklabels([])
+
+    time, volt = voltObj.get_next()
+    min_safe = 0.875  # 3.0
+    max_safe = 0.975  # 4.2
+
+    heatmap1 = ax1.pcolor(volt[:, :, 0], cmap='inferno',
+                         vmin=min_safe, vmax=max_safe, edgecolors='k', linewidths=0.7)
+    heatmap2 = ax2.pcolor(volt[:, :, 1], cmap='inferno',
+                         vmin=min_safe, vmax=max_safe, edgecolors='k', linewidths=0.7)
+    heatmap3 = ax3.pcolor(volt[:, :, 2], cmap='inferno',
+                         vmin=min_safe, vmax=max_safe, edgecolors='k', linewidths=0.7)
+    heatmap4 = ax4.pcolor(volt[:, :, 3], cmap='inferno', 
+                         vmin=min_safe, vmax=max_safe, edgecolors='k', linewidths=0.7)
+    heatmap5 = ax5.pcolor(volt[:, :, 4], cmap='inferno',
+                         vmin=min_safe, vmax=max_safe, edgecolors='k', linewidths=0.7)
+    heatmap6 = ax6.pcolor(volt[:, :, 5], cmap='inferno',
+                         vmin=min_safe, vmax=max_safe, edgecolors='k', linewidths=0.7)
+    heatmap7 = ax7.pcolor(volt[:, :, 6], cmap='inferno',
+                         vmin=min_safe, vmax=max_safe, edgecolors='k', linewidths=0.7)
+
+    # Format plot
+    data = volt[:, :, 0]
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            ax1.text(x + 0.5, y + 0.5, '%.3f' % data[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center', fontsize=8)
+    
+    data = volt[:, :, 1]
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            ax2.text(x + 0.5, y + 0.5, '%.3f' % data[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center', fontsize=8)
+
+    data = volt[:, :, 2]
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            ax3.text(x + 0.5, y + 0.5, '%.3f' % data[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center', fontsize=8)
+
+    data = volt[:, :, 3]
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            ax4.text(x + 0.5, y + 0.5, '%.3f' % data[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center', fontsize=8)
+    
+    data = volt[:, :, 4]
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            ax5.text(x + 0.5, y + 0.5, '%.3f' % data[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center', fontsize=8)
+    
+    data = volt[:, :, 5]
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            ax6.text(x + 0.5, y + 0.5, '%.3f' % data[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center', fontsize=8)
+
+    data = volt[:, :, 6]
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            ax7.text(x + 0.5, y + 0.5, '%.3f' % data[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center', fontsize=8)
+
+    # title = 'Voltage over time ' + str(dt.datetime.now().strftime('%H:%M:%S')) #for real-time
+    title = 'Voltage at time, t = ' + str(time)
+    fig.suptitle(title)
+
+def plot_cell_voltages(save_plot=True, show_plot=False, index=0, title="cell_volt_start",
+                       *, time, voltage_prediction):
+    """
+    Plots cell voltages at certain time, time[index].
+    """
+    sns.set(style="darkgrid")  # makes plots pretty
+    
+    fig = plt.figure(figsize=(12, 8))
+
+    ax1 = fig.add_subplot(4, 2, 1)
+    ax2 = fig.add_subplot(4, 2, 2)
+    ax3 = fig.add_subplot(4, 2, 3)
+    ax4 = fig.add_subplot(4, 2, 4)
+    ax5 = fig.add_subplot(4, 2, 5)
+    ax6 = fig.add_subplot(4, 2, 6)
+    ax7 = fig.add_subplot(4, 2, 7)
+    
+    voltObj = VoltObj(time, voltage_prediction)
+    voltObj.i = index
+    # create heatmap of cell voltages, code from animation reused
+    animate(0, voltObj, ax1, ax2, ax3, ax4, ax5, ax6, ax7, fig)
+
+    if save_plot:
+        # create output path
+        output_path = pathlib.Path(os.path.dirname(__file__), "output")
+        if not output_path.exists():
+            os.makedirs(output_path)
+        # save figure
+        plt.savefig(output_path.joinpath(title))
+
+    if show_plot:
+        plt.show()
+
 
 if __name__ == "__main__":
     """
     test on fsg-data
     """
+    
     folder_fsg = os.path.join(cwd, "data", "FSG_endurance")
     data,time = import_log(folder_fsg)
     time = time[20000:30000]
@@ -166,8 +296,10 @@ if __name__ == "__main__":
 
     Y_fsg = np.loadtxt("real_fsg.csv")
     y_fsg = np.loadtxt("pred_fsg.csv")
-
+ 
     # Visualize
-    netAccuracy(true_x=time, true_output=Y_fsg,model_x=pred_time,  model_output=y_fsg,
-    n_cells=NUM_CELLS, recursive_depth=recursive_depth, save_plot=False, show_plot=True)
-    # test()
+    #netAccuracy(true_x=time, true_output=Y_fsg,model_x=pred_time,  model_output=y_fsg,
+    #n_cells=NUM_CELLS, recursive_depth=recursive_depth, save_plot=False, show_plot=True)
+    
+    # make_animation(time=pred_time, voltage_prediction=y_fsg)
+    plot_cell_voltages(time=pred_time, voltage_prediction=y_fsg)
