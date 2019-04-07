@@ -32,7 +32,7 @@ def main():
 
             print("Start visualizing the model")
 
-            visualizer.visualize()
+            visualizer.visualize(data_loader)
 
     except Exception as e:
         print(e)

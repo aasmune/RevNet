@@ -1,7 +1,7 @@
 import os
 from base.base_data_loader import BaseDataLoader
 from keras.datasets import mnist
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import MinMaxScaler
 
 from utils.import_csv import read_csv_files, create_single_table
 
@@ -34,6 +34,7 @@ class RevNetDataLoader(BaseDataLoader):
 
     def get_test_data(self):
         return self.X_test, self.Y_test
+    
 
     def _create_channels(self):
         # Load all channels not related to temperature and voltage 
@@ -86,8 +87,9 @@ class RevNetDataLoader(BaseDataLoader):
         Y = Y[run_config.start_time:run_config.end_time]
 
         # Normalize
-        X = normalize(X, norm='max', axis=0)
-        Y = normalize(Y, norm='max', axis=0)
+        self.X_scaler = MinMaxScaler()
+
+        X = self.X_scaler.fit_transform(X, y=Y)
 
         return X, Y
         

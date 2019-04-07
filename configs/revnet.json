@@ -18,7 +18,7 @@
   },
   "trainer":{
     "name": "revnet_trainer.RevNetTrainer",
-    "num_epochs": 5,
+    "num_epochs": 20,
     "batch_size": 200,
     "verbose_training": true
   },
@@ -37,13 +37,13 @@
       "local_path": "fss",
       "start_time": 0,
       "end_time": -1,
-      "use_for_testing": true
+      "use_for_testing": false
     },
     "fsg":{
       "local_path": "fsg",
       "start_time": 0,
       "end_time": -1,
-      "use_for_testing": false
+      "use_for_testing": true
     },
     "nr1":{
       "local_path": "nr1",

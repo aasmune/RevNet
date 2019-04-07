@@ -33,7 +33,7 @@ class RevNetVisualization(BaseVisualization):
             length=self.config.model.recursive_depth,
             batch_size=self.config.trainer.batch_size)
 
-    def visualize(self):
+    def visualize(self, data_loader):
 
         print("Starting to visualize")
 
@@ -44,19 +44,19 @@ class RevNetVisualization(BaseVisualization):
             self.generator
         ) 
 
+        print("Prediction finished")
         # Visualize
         output_path = os.path.join(os.path.dirname(__file__), "..", "output")
 
         if not os.path.exists(output_path):
             os.makedirs(output_path)
         
-        for i in range(self.config.data.number_of_cells):
-
+        for i in range(1):
             fig = plt.figure(figsize=(12, 8))
             plt.title(f"Accuracy training, cell {i}")
             plt.xlabel("Number of training steps")
             plt.plot(Y[:,i], label="Measured", linewidth=0.7)
-            plt.plot(np.append(np.zeros(self.config.model.recursive_depth), predicted_output[:,i]), label="Predicted", linewidth=0.7)
+            plt.plot(predicted_output[:,i], label="Predicted", linewidth=0.7)
             plt.ylabel("Voltage")
             plt.grid()
             plt.legend(loc="best")
@@ -64,6 +64,7 @@ class RevNetVisualization(BaseVisualization):
             plt.tight_layout()
 
             plt.savefig(os.path.join(output_path, f"cell_{i}.pdf"))
+        plt.show()
 
     # def plot_loss(self):
     #     # return 

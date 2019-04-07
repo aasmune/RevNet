@@ -65,11 +65,11 @@ class RevNetTrainer(BaseTrain):
         X_trains = self.data[0]
         Y_trains = self.data[1]
         
-        generators = [TimeseriesGenerator(
-            X, 
-            Y, 
+        generators = TimeseriesGenerator(
+            np.concatenate(X_trains), 
+            np.concatenate(Y_trains),
             length=self.config.model.recursive_depth,
-            batch_size=self.config.trainer.batch_size) for (X, Y) in zip(X_trains, Y_trains)]
+            batch_size=self.config.trainer.batch_size)
 
         self.generators = generators
 
@@ -80,16 +80,16 @@ class RevNetTrainer(BaseTrain):
         print(f"Architecture: {self.config.model.architecture}")
         print(f"Epochs: {self.config.trainer.num_epochs}")
         print(f"Batch size: {self.config.trainer.batch_size}")
-        print(f"Training sets: {list(key for key in self.config.runs.keys() if self.config.runs[key].use_for_testing)}\n")
-        print(f"Size of each generator: {self.size_of_each_generator}")
-        print(f"End of generator steps: {self.end_of_each_generator_step}")
+        print(f"Training sets: {list(key for key in self.config.runs.keys() if not self.config.runs[key].use_for_testing)}\n")
+        # print(f"Size of each generator: {self.size_of_each_generator}")
+        # print(f"End of generator steps: {self.end_of_each_generator_step}")
 
         history = self.model.fit_generator(
-            custom_generator(self.generators),
+            self.generators,
             epochs=self.config.trainer.num_epochs,
             verbose=self.config.trainer.verbose_training,
             callbacks=self.callbacks,
-            steps_per_epoch=np.ceil(sum(x.data.shape[0] for x in self.generators)/self.config.trainer.batch_size)
+            steps_per_epoch=np.ceil(len(self.generators)/self.config.trainer.batch_size)
         )
         self.loss.extend(history.history['loss'])
         self.acc.extend(history.history['acc'])

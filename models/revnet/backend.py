@@ -13,41 +13,41 @@ class BaseMemory:
 
 
 class LargeRevNetMemory(BaseMemory):
-    def __init__(self, input_layer):
+    def __init__(self, sequential):
 
         # Layer 1
-        x = LSTM(1000, return_sequences=True)(input_layer)
-        x = Dropout(0.2)(x)
+        sequential.add(LSTM(1000, return_sequences=True))
+        sequential.add(Dropout(0.2))
 
         # Layer 2
-        x = LSTM(100, return_sequences=True)(x)
-        x = LSTM(100, return_sequences=True)(x)
-        x = Dropout(0.2)(x)
+        sequential.add(LSTM(100, return_sequences=True))
+        sequential.add(LSTM(100, return_sequences=True))
+        sequential.add(Dropout(0.2))
 
         # Layer 3
-        x = LSTM(100, return_sequences=True)(x)
-        x = LSTM(100, return_sequences=True)(x)
-        x = Dropout(0.2)(x)
+        sequential.add(LSTM(100, return_sequences=True))
+        sequential.add(LSTM(100, return_sequences=True))
+        sequential.add(Dropout(0.2))
         
-        x = Flatten()(x)
+        sequential.add(Flatten())
 
-        self._memory = x
+        self._memory = sequential
 
 class SmallRevNetMemory(BaseMemory):
-    def __init__(self, input_layer):
+    def __init__(self, sequential):
 
         # Layer 1
-        x = LSTM(100, return_sequences=True)(input_layer)
-        x = LSTM(100, return_sequences=True)(x)
-        x = Dropout(0.2)(x)
+        sequential.add(LSTM(100, return_sequences=True))
+        sequential.add(LSTM(100, return_sequences=True))
+        sequential.add(Dropout(0.2))
 
-        x = Flatten()(x)
+        sequential.add(Flatten())
 
         # Dense layers
-        x = Dense(100)(x)
-        x = Dropout(0.2)(x)
+        sequential.add(Dense(100))
+        sequential.add(Dropout(0.2))
         
-        x = Dense(100)(x)
-        x = Dropout(0.2)(x)
+        sequential.add(Dense(100))
+        sequential.add(Dropout(0.2))
 
-        self._memory = x
+        self._memory = sequential

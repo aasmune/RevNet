@@ -1,5 +1,5 @@
-from keras.layers import Input, Flatten, Dense
-from keras.models import Model
+from keras.layers import Input, Flatten, Dense, LSTM, Dropout
+from keras.models import Sequential
 from base.base_model import BaseModel
 
 from models.revnet.backend import LargeRevNetMemory, SmallRevNetMemory
@@ -15,19 +15,38 @@ class RevNet(BaseModel):
         number_of_inputs = len(self.config.data.other_channels)
         architecture = self.config.model.architecture
         # Build the model
-        input_layer = Input(shape=(recursive_depth, number_of_inputs))
+        model = Sequential()
+        # model.add()
 
-        if architecture == "LargeMemory":
-            self.backend = LargeRevNetMemory(input_layer)
-        elif architecture == "SmallMemory":
-            self.backend = SmallRevNetMemory(input_layer)
+        # if architecture == "LargeMemory":
+        #     self.backend = LargeRevNetMemory(model)
+        # elif architecture == "SmallMemory":
+        #     self.backend = SmallRevNetMemory(model)
         
-        memory = self.backend.memory
+        # model = self.backend.memory
 
-        output = Dense(self.config.data.number_of_cells, activation="linear")(memory)
+        # Layer 1
+        model.add(LSTM(100, return_sequences=True, input_shape=(recursive_depth, number_of_inputs)))
+        model.add(LSTM(100, return_sequences=True))
+        model.add(Dropout(0.2))
+
+        model.add(LSTM(100, return_sequences=True))
+        model.add(LSTM(100, return_sequences=True))
+        model.add(Dropout(0.2))
+
+        # Dense layers
+        model.add(Dense(100))
+        model.add(Dropout(0.2))
+        
+        model.add(Dense(100))
+        model.add(Dropout(0.2))
+        
+        model.add(Flatten())
+
+        model.add(Dense(self.config.data.number_of_cells, activation="linear"))
 
         # Create model
-        self.model = Model(input_layer, output)
+        self.model = model
 
         self.model.compile(
               loss=self.config.model.loss,
