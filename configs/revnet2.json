@@ -3,10 +3,10 @@
     "name": "revnet_from_config"
   },
   "data_loader": {
-    "name": "revnet_data_loader.RevNetDataLoader"
+    "name": "revnet_data_loader.RevNetDataLoader2"
   },
   "visualization": {
-    "name": "revnet_visualization.RevNetVisualization"
+    "name": "revnet_visualization.RevNetVisualization2"
   },
   "model":{
     "name": "revnet.frontend.RevNet",
@@ -17,8 +17,8 @@
     "recursive_depth": 10
   },
   "trainer":{
-    "name": "revnet_trainer.RevNetTrainer",
-    "num_epochs": 10,
+    "name": "revnet_trainer.RevNetTrainer2",
+    "num_epochs": 4,
     "batch_size": 200,
     "verbose_training": true
   },
